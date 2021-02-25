@@ -1,0 +1,85 @@
+#include <iostream> 
+#define MAX_N 100
+using namespace std;
+
+double  max_arr(double arr[], int n);
+double  min_arr(double arr[], int n);
+void view_arr(double arr[], int n);
+void input_arr(double arr[], int n);
+double sum_elements(double arr[], int n);
+
+int main()
+{
+    setlocale(LC_ALL, "ru");
+    cout << "Найти сумму элементов массива, которые находятся между максимальным положительным и минимальным отрицательным числом. \nВыводить на экран элементы, удовлетворяющие условию поиска.\n\n";
+    int n;
+    cout << "Введите размер массива: ";
+    cin >> n;
+    double arr[MAX_N];
+    input_arr(arr, n);
+    cout << "Массив: " << endl;
+    view_arr(arr, n);
+    cout << "Максимальный положительный: " << max_arr(arr, n) << endl;
+    cout << "Минимальный отрицательный: " << min_arr(arr, n) << endl;
+    cout << "Сумма: " << sum_elements(arr, n);
+    return 0;
+}
+
+double max_arr(double arr[], int n)
+{
+    double max = 0;
+    for (int i = 0; i < n; i++)
+        if (max < arr[i])
+            max = arr[i];
+    return max;
+}
+double min_arr(double arr[], int n)
+{
+    double min = -1;
+    for (int i = 0; i < n; i++)
+        if (min > arr[i])
+            min = arr[i];
+    return min;
+}
+void input_arr(double arr[], int n)
+{
+    for (int i = 0; i < n; i++)
+        cin >> arr[i];
+}
+void view_arr(double arr[], int n)
+{
+    for (int i = 0; i < n; i++)
+        cout << "[" << i << "]" << arr[i] << " " << endl;
+    cout << endl;
+}
+double sum_elements(double arr[], int n)
+{
+    int q; // индекс маскимального положительного
+    for (int i = 0; i < n; i++)
+        if (arr[i] == max_arr(arr, n)) {
+            q = i;
+            break;
+        }
+    int w; // индекс минимального отрицательного
+    for (int i = 0; i < n; i++)
+        if (arr[i] == min_arr(arr, n))
+        {
+            w = i;
+            break;
+        }
+
+    if (q < w) // если элемент с индексом q находится левее
+    {
+        double sum = 0;
+        for (int i = q + 1; i < w; i++)
+            sum += arr[i];
+        return sum;
+    }
+    else if (q > w)
+    {
+        double sum = 0;
+        for (int i = w + 1; i < q; i++)
+            sum += arr[i];
+        return sum;
+    }
+}
