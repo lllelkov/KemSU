@@ -1,189 +1,187 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
 using namespace std;
 
+struct magazine {
+    int Price = 0, pages = 0, year = 0;
+    string name;
 
-struct product_group //Описание партий товаров
-{
-    int volume;
-    double price;
+    void out();
+    bool IsEqual(magazine);
 };
 
-struct MyQueue //Описание очереди
+struct MyStack
 {
     struct Node
     {
-        product_group data;
-        Node* next;
+        magazine data;
+        Node* prev;
     };
-
-    Node* First = NULL;
+    Node* Top = NULL;
     int Count = 0;
-    double income = 0;
 
-    bool Push(product_group);
-    bool Pop(product_group&);
+    bool Push(magazine);
+    bool Pop(magazine&);
     void Info();
+    void clear(magazine&);
 };
 
-bool MyQueue::Push(product_group dt) //Добавить партию
+void magazine::out() {
+    cout << "Информация о журнале:"
+        << "\tЦена - " << Price << endl
+        << "\tКоличество страниц - " << pages << endl
+        << "\tНазвание - " << name << endl
+        << "\tГод выпуска - " << year << endl;
+}
+
+bool magazine::IsEqual(magazine a) {
+    if (a.Price == Price && a.pages == pages && a.name == name && a.year == year) return true;
+    return false;
+}
+
+bool MyStack::Push(magazine data)
 {
-    if (!First)
+    if (!Top)
     {
-        First = new Node;
-        First->next = NULL;
-        First->data = dt;
+        Top = new Node;
+        Top->prev = NULL;
         Count = 1;
     }
     else
     {
         Node* temp;
-        temp = First;
-        while (temp->next != NULL) temp = temp->next;
-        temp->next = new Node;
-        temp->next->data = dt;
-        temp->next->next = NULL;
+        temp = new Node;
+        temp->prev = Top;
+        Top = temp;
         Count++;
     }
+    Top->data = data;
     return true;
 }
 
-bool MyQueue::Pop(product_group& dt) //Убрать партию 
+bool MyStack::Pop(magazine& data)
 {
-    if (!First) return false;
-    Node* temp = First->next;
-    dt = First->data;
-    delete First;
-    First = temp;
+    if (!Top) return false;
+    Node* temp = Top->prev;
+    data = Top->data;
+    delete Top;
+    Top = temp;
     Count--;
     return true;
 }
 
-void MyQueue::Info() // Информация о объеме и цене первой партии и кол-ве партий
+void MyStack::Info()
 {
-    if (!First) cout << "Склад пуст" << endl;
+    if (!Top) cout << "Stack is empty" << endl;
     else
     {
-        cout << endl << "Информация о состоянии склада: " << endl;
-        cout << "\tКоличество партий на складе = " << Count << endl;
-        cout << "\tОбъем первой партии = " << First->data.volume << endl;
-        cout << "\tСтоимость первой партии = " << First->data.price << endl << endl;
+        cout << endl << "Stack info: " << endl;
+        cout << "Stack size = " << Count << endl;
+        Top->data.out();
     }
 }
 
-bool check(MyQueue Q, product_group dt_x) //Проверка на возможность продажи партии
-{
-    product_group dt;
-    MyQueue::Node* a;
-    a = Q.First;
-    int k = 0;
-    while (k != Q.Count && a->data.price <= dt_x.price)
-    {
-        dt.price = a->data.price;
-        dt.volume = a->data.volume;
-        if (dt_x.volume <= dt.volume)
-        {
-            dt_x.volume = 0;
-        }
-        else
-        {
-            dt_x.volume -= dt.volume;
-        }
-        if (dt_x.volume == 0)
-        {
-            return true;
-        }
-        else
-        {
-            if (k < Q.Count)
-            {
-                k++;
-                a = a->next;
-            }
-            else return false;
-        }
-    }
-    return false;
+void MyStack::clear(magazine& k) {
+    while (Count != 0) Pop(k);
 }
+
+void read(MyStack&, string);
+void FindCr(MyStack&, magazine);
 
 int main()
 {
     setlocale(LC_ALL, "Russian");
+    magazine k;
+    magazine find;
+    MyStack S;
+    read(S, "text.txt");
+    int choice;
 
-    MyQueue Q;
-    product_group dt;
-    product_group dt_x;
 
-    int m = 1;
-    while (m)
-    {
-        Q.Info();
+    do {
+        cout << "1. Посмотреть информацию о верхнем журнале" << endl;
+        cout << "2. Добавить новый журнал" << endl;
+        cout << "3. Найти журнал" << endl;
+        cout << "4. Очистить корзину с журналами" << endl;
+        cout << "0. Выход" << endl;
 
-        cout << "1. Загрузка новой партии" << endl;
-        cout << "2. Продажа партии" << endl;
-        cout << "3. Отчет" << endl;
-        cout << "0. Закончить рабочую сессию" << endl;
-        cin >> m;
+        cin >> choice;
 
-        switch (m)
-        {
-        case 1:
-        {
+        switch (choice) {
+        case 1: {
             system("cls");
-            cout << "Введите объем партии, а затем стоимость:" << endl;
-            cout << "Объем = "; cin >> dt.volume;
-            cout << "Стоимость = "; cin >> dt.price;
-            Q.Push(dt);
-            system("cls");
-            break;
-        }
-        case 2:
-        {
-            system("cls");
-            cout << "Укажите объем покупки, а затем стоимость:" << endl;
-            cout << "Объем = "; cin >> dt_x.volume;
-            cout << "Стоимость = "; cin >> dt_x.price;
-            dt = Q.First->data;
-            if (check(Q, dt_x))
-            {
-                while (dt_x.volume)
-                {
-                    if (dt_x.volume <= dt.volume)
-                    {
-                        Q.income += dt_x.volume * (dt_x.price - dt.price);
-                        dt.volume -= dt_x.volume;
-                        dt_x.volume = 0;
-                        Q.First->data.volume = dt.volume;
-                    }
-                    else
-                    {
-                        Q.income += dt.volume * (dt_x.price - dt.price);
-                        dt_x.volume -= dt.volume;
-                        dt.volume = 0;
-                    }
-                    if (dt.volume == 0)
-                    {
-                        Q.Pop(dt);
-                        dt = Q.First->data;
-                    }
-                }
-                cout << "Сделка заключена" << endl;
-            }
-            else cout << "Сделка отменена" << endl;
+            S.Info();
             system("pause");
             system("cls");
             break;
         }
-        case 3:
-        {
+
+        case 2: {
             system("cls");
-            cout << "Количество партий на складе = " << Q.Count << endl;
-            cout << "Прибыль с продаж = " << Q.income << endl;
-            system("pause");
+            cout << "Введите цену: "; cin >> k.Price;
+            cout << "Введите количество страниц: "; cin >> k.pages;
+            cout << "Введите название: "; cin >> k.name;
+            cout << "Введите год выпуска: "; cin >> k.year;
+            S.Push(k);
             system("cls");
             break;
         }
+
+        case 3: {
+            system("cls");
+            cout << "Введите цену: "; cin >> find.Price;
+            cout << "Введите количество страниц: "; cin >> find.pages;
+            cout << "Введите название: "; cin >> find.name;
+            cout << "Введите год выпуска: "; cin >> find.year;
+            FindCr(S, find);
+            system("cls");
+            break;
         }
+
+        case 4: {
+            S.clear(k);
+            system("cls");
+        }
+
+        case 0: {
+            S.clear(k);
+            break;
+        }
+
+        }
+    } while (choice != 0);
+}
+
+void read(MyStack& S, string FileName) {
+    ifstream F(FileName);
+
+    if (!F) {
+        cout << "Ошибка при загрузке базы журналов. Не найден файл!" << endl << endl;
+        return;
     }
+
+    magazine cr;
+
+    while (F >> cr.Price >> cr.pages >> cr.name >> cr.year) S.Push(cr);
+
+    F.close();
+}
+
+void FindCr(MyStack& S, magazine find) {
+    magazine cr;
+    MyStack second;
+    while (S.Count != 0 && !(S.Top->data.IsEqual(find))) {
+        S.Pop(cr);
+        second.Push(cr);
+    }
+    if (S.Count != 0) {
+        cout << "Журнал найден" << endl;
+        S.Pop(cr);
+        system("pause");
+        system("cls");
+    }
+    else cout << "Журнал не найден" << endl;
+    while (second.Pop(cr)) S.Push(cr);
+    system("pause");
+    system("cls");
 }
