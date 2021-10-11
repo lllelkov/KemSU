@@ -27,7 +27,7 @@ struct MyStack
 };
 
 void magazine::out() {
-    cout << "Информация о журнале:"
+    cout << "Информация о журнале:" << endl
         << "\tЦена - " << Price << endl
         << "\tКоличество страниц - " << pages << endl
         << "\tНазвание - " << name << endl
